@@ -4,29 +4,15 @@ from flask import Flask, request, jsonify
 from traceback import print_exc
 import json
 import uuid
-import logging
-import os
 
 
-japanOcr = PaddleOCR(use_angle_cls=True, use_gpu=False, lang="japan", enable_mkldnn=True)
+japOcr = PaddleOCR(use_angle_cls=True, use_gpu=False, lang="japan", enable_mkldnn=True)
+engOcr = PaddleOCR(use_angle_cls=True, use_gpu=False, lang="en", enable_mkldnn=True)
+korOcr = PaddleOCR(use_angle_cls=True, use_gpu=False, lang="korean", enable_mkldnn=True)
+
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
-
-
-def setLog() :
-
-    filePath = os.path.join(os.getcwd(), "logs", "log.txt")
-    try :
-        os.mkdir("logs")
-    except :
-        pass
-    else :
-        open(filePath, "a", encoding="utf-8")
-
-    logging.basicConfig(filename=filePath,
-                        format='%(acstime)s%(levelname)s:%(meaasge)s',
-                        level=logging.DEBUG)
 
 
 # 失败的返回
@@ -55,10 +41,14 @@ def jsonSuccess(data) :
 # ocr解析
 def ocrProccess(imgPath, language) :
 
-    if language == "japan" :
-        result = japanOcr.ocr(imgPath, cls=True)
+    if language == "jap" :
+        result = japOcr.ocr(imgPath, cls=True)
+    elif language == "eng" :
+        result = engOcr.ocr(imgPath, cls=True)
+    elif language == "kor":
+        result = korOcr.ocr(imgPath, cls=True)
     else :
-        return
+        result = japOcr.ocr(imgPath, cls=True)
 
     resMapList = []
     for line in result :
@@ -84,17 +74,19 @@ def getPost() :
     try:
         post_data = request.get_data()
         post_data = json.loads(post_data.decode("utf-8"))
+
+        languageList = ["jap", "eng", "kor"]
+        if post_data["Language"] not in languageList :
+            return jsonFail("Language {} doesn't exist".format(post_data["Language"]))
+
         res = ocrProccess(post_data["ImagePath"], post_data["Language"])
-        logging.info(res)
         return jsonSuccess(res)
 
     except Exception as err:
         print_exc()
-        logging.error(err)
         return jsonFail(err)
 
 
 if __name__ == "__main__" :
 
-    setLog()
     app.run(debug=False, host="0.0.0.0", port=6666)
