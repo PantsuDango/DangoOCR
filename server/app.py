@@ -1,13 +1,32 @@
 from paddleocr import PaddleOCR
 from flask import Flask, request, jsonify
+
+from traceback import print_exc
 import json
 import uuid
-from traceback import print_exc
+import logging
+import os
+
 
 japanOcr = PaddleOCR(use_angle_cls=True, use_gpu=False, lang="japan", enable_mkldnn=True)
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
+
+
+def setLog() :
+
+    filePath = os.path.join(os.getcwd(), "logs", "log.txt")
+    try :
+        os.mkdir("logs")
+    except :
+        pass
+    else :
+        open(filePath, "a", encoding="utf-8")
+
+    logging.basicConfig(filename=filePath,
+                        format='%(acstime)s%(levelname)s:%(meaasge)s',
+                        level=logging.DEBUG)
 
 
 # 失败的返回
@@ -66,13 +85,16 @@ def getPost() :
         post_data = request.get_data()
         post_data = json.loads(post_data.decode("utf-8"))
         res = ocrProccess(post_data["ImagePath"], post_data["Language"])
+        logging.info(res)
         return jsonSuccess(res)
 
     except Exception as err:
         print_exc()
+        logging.error(err)
         return jsonFail(err)
 
 
 if __name__ == "__main__" :
 
+    setLog()
     app.run(debug=False, host="0.0.0.0", port=6666)

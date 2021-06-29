@@ -10,7 +10,7 @@ def post() :
 
     url = 'http://127.0.0.1:6666/ocr/api'
     filename = "image.jpg"
-    imagePath = os.getcwd() + "/" + filename
+    imagePath = os.path.join(os.getcwd(), filename)
     data = {
         'ImagePath': imagePath,
         'Language': "japan"
