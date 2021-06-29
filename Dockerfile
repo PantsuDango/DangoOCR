@@ -3,6 +3,7 @@ FROM centos:7
 ENV LANG=en_US.utf8
 
 # 安装依赖环境
+RUN yum update
 RUN yum -y install gcc
 RUN yum -y install zlib-devel
 RUN yum -y install bzip2-devel
@@ -12,7 +13,6 @@ RUN yum -y install sqlite-devel
 RUN yum -y install readline-devel
 RUN yum -y install tk-devel
 RUN yum -y install gdbm-devel
-RUN yum -y install db4-devel
 RUN yum -y install libpcap-devel
 RUN yum -y install xz-devel
 RUN yum -y install libffi-devel
@@ -33,8 +33,8 @@ RUN ln -s /usr/local/python37/bin/pip3.7 /usr/bin/pip3
 RUN pip3 install --upgrade pip
 
 # 安装PaddleOCR
-RUN pip3 install paddlepaddle
-RUN pip3 install "paddleocr>=2.0.6"
+RUN pip3 install "paddlepaddle==2.0.1"
+RUN pip3 install "paddleocr==2.0.6"
 
 RUN mkdir -vp /data && cd /data
 WORKDIR /data

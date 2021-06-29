@@ -2,11 +2,9 @@ from paddleocr import PaddleOCR
 from flask import Flask, request, jsonify
 import json
 import uuid
-import os
 from traceback import print_exc
 
-os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
-japanOcr = PaddleOCR(use_angle_cls=True, use_gpu=False, lang="japan")
+japanOcr = PaddleOCR(use_angle_cls=True, use_gpu=False, lang="japan", enable_mkldnn=True)
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
