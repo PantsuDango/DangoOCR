@@ -48,7 +48,7 @@ def post(changeSize=False) :
 
 def main() :
 
-    number = 1
+    number = 10
     timeCount = 0
     for num in range(number) :
         start = time.time()
@@ -57,7 +57,7 @@ def main() :
         timeCount += end - start
         print("time: {}\n".format(end - start))
 
-    print("avg time: ", timeCount / number)
+    print("avg time: {}".format(timeCount / number))
 
 
 if __name__ == "__main__" :

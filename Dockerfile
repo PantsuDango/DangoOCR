@@ -33,7 +33,7 @@ RUN ln -s /usr/local/python37/bin/pip3.7 /usr/bin/pip3
 RUN pip3 install --upgrade pip
 
 # 安装PaddleOCR
-RUN pip3 install "paddlepaddle==2.0.1"
+RUN pip3 install paddlepaddle
 RUN pip3 install "paddleocr==2.0.6"
 
 RUN mkdir -vp /data && cd /data
