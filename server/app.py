@@ -41,11 +41,11 @@ def jsonSuccess(data) :
 # ocr解析
 def ocrProccess(imgPath, language) :
 
-    if language == "jap" :
+    if language == "JAP" :
         result = japOcr.ocr(imgPath, cls=True)
-    elif language == "eng" :
+    elif language == "ENG" :
         result = engOcr.ocr(imgPath, cls=True)
-    elif language == "kor":
+    elif language == "KOR":
         result = korOcr.ocr(imgPath, cls=True)
     else :
         result = japOcr.ocr(imgPath, cls=True)
@@ -75,7 +75,7 @@ def getPost() :
         post_data = request.get_data()
         post_data = json.loads(post_data.decode("utf-8"))
 
-        languageList = ["jap", "eng", "kor"]
+        languageList = ["JAP", "ENG", "KOR"]
         if post_data["Language"] not in languageList :
             return jsonFail("Language {} doesn't exist".format(post_data["Language"]))
 

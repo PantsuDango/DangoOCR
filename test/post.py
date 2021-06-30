@@ -38,7 +38,7 @@ def post(changeSize=False) :
 
     data = {
         'ImagePath': imagePath,
-        'Language': "jap"
+        'Language': "JAP"
     }
 
     res = requests.post(url, data=json.dumps(data))
