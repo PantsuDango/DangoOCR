@@ -6,9 +6,9 @@ import json
 import uuid
 
 
-japOcr = PaddleOCR(use_angle_cls=True, use_gpu=False, lang="japan", enable_mkldnn=True)
-engOcr = PaddleOCR(use_angle_cls=True, use_gpu=False, lang="en", enable_mkldnn=True)
-korOcr = PaddleOCR(use_angle_cls=True, use_gpu=False, lang="korean", enable_mkldnn=True)
+japOcr = PaddleOCR(use_angle_cls=False, use_gpu=False, lang="japan", enable_mkldnn=True)
+engOcr = PaddleOCR(use_angle_cls=False, use_gpu=False, lang="en", enable_mkldnn=True)
+korOcr = PaddleOCR(use_angle_cls=False, use_gpu=False, lang="korean", enable_mkldnn=True)
 
 
 app = Flask(__name__)
@@ -38,20 +38,52 @@ def jsonSuccess(data) :
     return jsonify(post_data)
 
 
+def ocrResultSort(ocr_result) :
+
+    ocr_result.sort(key=lambda x: x[0][0][1])
+
+    # 二次根据纵坐标数值分组（分行）
+    allgroup = []
+    newgroup = []
+    flag = ocr_result[0][0][0][1]
+    pram = max([int((i[0][3][1] - i[0][0][1]) / 2) for i in ocr_result])
+
+    for sn, i in enumerate(ocr_result) :
+        if abs(flag - i[0][0][1]) <= pram :
+            newgroup.append(i)
+        else:
+            allgroup.append(newgroup)
+            flag = i[0][0][1]
+            newgroup = [i]
+    allgroup.append(newgroup)
+
+    # 单行内部按左上点横坐标排序
+    allgroup = [sorted(i, key=lambda x: x[0][0][0]) for i in allgroup]
+    # 去除分组，归一为大列表
+    allgroup = [ii for i in allgroup for ii in i]
+    # 列表输出为排序后txt
+    allgroup = [ii for ii in allgroup]
+
+    return allgroup
+
+
 # ocr解析
 def ocrProccess(imgPath, language) :
 
     if language == "JAP" :
-        result = japOcr.ocr(imgPath, cls=True)
+        result = japOcr.ocr(imgPath, cls=False)
     elif language == "ENG" :
-        result = engOcr.ocr(imgPath, cls=True)
+        result = engOcr.ocr(imgPath, cls=False)
     elif language == "KOR":
-        result = korOcr.ocr(imgPath, cls=True)
+        result = korOcr.ocr(imgPath, cls=False)
     else :
-        result = japOcr.ocr(imgPath, cls=True)
+        result = japOcr.ocr(imgPath, cls=False)
 
+    result = ocrResultSort(result)
     resMapList = []
+
     for line in result :
+        print(line[1][0])
         resMap = {
             "Coordinate": {
                 "UpperLeft": line[0][0],
@@ -63,6 +95,7 @@ def ocrProccess(imgPath, language) :
             "Score": float(line[1][1])
         }
         resMapList.append(resMap)
+    print()
 
     return resMapList
 
