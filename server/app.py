@@ -2,6 +2,9 @@ import paddleocr.paddleocr
 from paddleocr.paddleocr import PaddleOCR
 from flask import Flask, request, jsonify
 
+import threading
+import time
+import requests
 from traceback import print_exc
 import json
 import uuid
@@ -133,4 +136,28 @@ def getPost():
 
 if __name__ == "__main__":
     port = openConfig("../config/config.yaml")
+
+    # 检测运行状态
+    def render():
+        while True:
+            try:
+                time.sleep(1)
+                r = requests.get(f"http://0.0.0.0:{port}/ocr/act")
+                break
+            except:
+                print_exc()
+
+
+    @app.before_first_request
+    def act():
+        print("\033[0;40;42m\t----------- | 团子离线OCR启动完毕 | -----------\033[0m")
+
+
+    @app.route("/ocr/act", methods=["GET"])
+    def get_act():
+        return jsonify({"act": "1"})
+
+    t = threading.Thread(target=render)
+    t.setDaemon(True)
+    t.start()
     app.run(debug=False, host="0.0.0.0", port=port, threaded=False)
