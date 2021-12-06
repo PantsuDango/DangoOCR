@@ -1,23 +1,38 @@
-from paddleocr import PaddleOCR
+import paddleocr.paddleocr
+from paddleocr.paddleocr import PaddleOCR
 from flask import Flask, request, jsonify
 
+import threading
+import time
+import requests
 from traceback import print_exc
 import json
 import uuid
+import yaml
 
+# 2.3版本可用
+paddleocr.paddleocr.BASE_DIR = "./"
 
 japOcr = PaddleOCR(use_angle_cls=False, use_gpu=False, lang="japan", enable_mkldnn=True)
 engOcr = PaddleOCR(use_angle_cls=False, use_gpu=False, lang="en", enable_mkldnn=True)
 korOcr = PaddleOCR(use_angle_cls=False, use_gpu=False, lang="korean", enable_mkldnn=True)
 
-
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 
 
-# 失败的返回
-def jsonFail(message) :
+# 打开本地配置文件
+def openConfig(path):
+    try:
+        with open(path, "r", encoding="utf-8") as file:
+            config = yaml.load(file.read(), Loader=yaml.FullLoader)
+        return int(config["port"])
+    except Exception:
+        return 6666
 
+
+# 失败的返回
+def jsonFail(message):
     post_data = {
         "Code": -1,
         "Message": str(message),
@@ -27,8 +42,7 @@ def jsonFail(message) :
 
 
 # 成功的返回
-def jsonSuccess(data) :
-
+def jsonSuccess(data):
     post_data = {
         "Code": 0,
         "Message": "Success",
@@ -38,8 +52,7 @@ def jsonSuccess(data) :
     return jsonify(post_data)
 
 
-def ocrResultSort(ocr_result) :
-
+def ocrResultSort(ocr_result):
     ocr_result.sort(key=lambda x: x[0][0][1])
 
     # 二次根据纵坐标数值分组（分行）
@@ -48,8 +61,8 @@ def ocrResultSort(ocr_result) :
     flag = ocr_result[0][0][0][1]
     pram = max([int((i[0][3][1] - i[0][0][1]) / 2) for i in ocr_result])
 
-    for sn, i in enumerate(ocr_result) :
-        if abs(flag - i[0][0][1]) <= pram :
+    for sn, i in enumerate(ocr_result):
+        if abs(flag - i[0][0][1]) <= pram:
             newgroup.append(i)
         else:
             allgroup.append(newgroup)
@@ -68,21 +81,23 @@ def ocrResultSort(ocr_result) :
 
 
 # ocr解析
-def ocrProccess(imgPath, language) :
-
-    if language == "JAP" :
+def ocrProccess(imgPath, language):
+    if language == "JAP":
         result = japOcr.ocr(imgPath, cls=False)
-    elif language == "ENG" :
+    elif language == "ENG":
         result = engOcr.ocr(imgPath, cls=False)
     elif language == "KOR":
         result = korOcr.ocr(imgPath, cls=False)
-    else :
+    else:
         result = japOcr.ocr(imgPath, cls=False)
 
-    result = ocrResultSort(result)
-    resMapList = []
+    try:
+        result = ocrResultSort(result)
+    except Exception:
+        pass
 
-    for line in result :
+    resMapList = []
+    for line in result:
         print(line[1][0])
         resMap = {
             "Coordinate": {
@@ -102,14 +117,13 @@ def ocrProccess(imgPath, language) :
 
 # 接收请求
 @app.route("/ocr/api", methods=["POST"])
-def getPost() :
-
+def getPost():
     try:
         post_data = request.get_data()
         post_data = json.loads(post_data.decode("utf-8"))
 
         languageList = ["JAP", "ENG", "KOR"]
-        if post_data["Language"] not in languageList :
+        if post_data["Language"] not in languageList:
             return jsonFail("Language {} doesn't exist".format(post_data["Language"]))
 
         res = ocrProccess(post_data["ImagePath"], post_data["Language"])
@@ -120,6 +134,30 @@ def getPost() :
         return jsonFail(err)
 
 
-if __name__ == "__main__" :
+if __name__ == "__main__":
+    port = openConfig("../config/config.yaml")
 
-    app.run(debug=False, host="0.0.0.0", port=6666, threaded=False)
+    # 检测运行状态
+    def render():
+        while True:
+            try:
+                time.sleep(1)
+                r = requests.get(f"http://0.0.0.0:{port}/ocr/act")
+                break
+            except:
+                print_exc()
+
+
+    @app.before_first_request
+    def act():
+        print("\033[0;40;42m\t----------- | 团子离线OCR启动完毕 | -----------\033[0m")
+
+
+    @app.route("/ocr/act", methods=["GET"])
+    def get_act():
+        return jsonify({"act": "1"})
+
+    t = threading.Thread(target=render)
+    t.setDaemon(True)
+    t.start()
+    app.run(debug=False, host="0.0.0.0", port=port, threaded=False)
