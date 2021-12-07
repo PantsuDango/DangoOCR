@@ -2,9 +2,9 @@ import paddleocr.paddleocr
 from paddleocr.paddleocr import PaddleOCR
 from flask import Flask, request, jsonify
 
+import socket
 import threading
 import time
-import requests
 from traceback import print_exc
 import json
 import uuid
@@ -134,30 +134,26 @@ def getPost():
         return jsonFail(err)
 
 
-if __name__ == "__main__":
+# 检测运行状态
+def detectPort(port=6666) :
+
+    while True :
+        s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        try :
+            s.connect(("127.0.0.1", int(port)))
+            s.shutdown(2)
+            s.close()
+            print("\n------------- | 团子离线OCR启动完毕 | -------------")
+            print("------| 请勿关闭此窗口, 缩小后直接使用翻译器 | ------")
+            break
+        except Exception :
+            time.sleep(1)
+
+
+if __name__ == "__main__" :
+
     port = openConfig("../config/config.yaml")
-
-    # 检测运行状态
-    def render():
-        while True:
-            try:
-                time.sleep(1)
-                r = requests.get(f"http://0.0.0.0:{port}/ocr/act")
-                break
-            except:
-                print_exc()
-
-
-    @app.before_first_request
-    def act():
-        print("\033[0;40;42m\t----------- | 团子离线OCR启动完毕 | -----------\033[0m")
-
-
-    @app.route("/ocr/act", methods=["GET"])
-    def get_act():
-        return jsonify({"act": "1"})
-
-    t = threading.Thread(target=render)
-    t.setDaemon(True)
-    t.start()
+    thread = threading.Thread(target=detectPort, args=(port,))
+    thread.setDaemon(True)
+    thread.start()
     app.run(debug=False, host="0.0.0.0", port=port, threaded=False)
