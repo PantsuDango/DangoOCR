@@ -3,7 +3,7 @@ FROM centos:7
 ENV LANG=en_US.utf8
 
 # 安装依赖环境
-RUN yum update
+RUN yum update -y
 RUN yum -y install gcc
 RUN yum -y install zlib-devel
 RUN yum -y install bzip2-devel

@@ -3,6 +3,7 @@ import requests
 import time
 import json
 import os
+from traceback import print_exc
 
 
 def processImage(filename, mwidth=400, mheight=400):
@@ -30,7 +31,7 @@ def processImage(filename, mwidth=400, mheight=400):
 def post(changeSize=False) :
 
     url = 'http://127.0.0.1:6666/ocr/api'
-    filename = r"image.jpg"
+    filename = r"image2.jpg"
     if changeSize == True :
         imagePath = processImage(filename, 400, 400)
     else :
@@ -40,10 +41,22 @@ def post(changeSize=False) :
         'ImagePath': imagePath,
         'Language': "JAP"
     }
+    proxies = {"http": None, "https": None}
 
-    res = requests.post(url, data=json.dumps(data))
-    res.encoding = "utf-8"
-    print(json.loads(res.text))
+    try :
+        res = requests.post(url, data=json.dumps(data), proxies=proxies)
+        res.encoding = "utf-8"
+        result = json.loads(res.text)
+        content = ""
+        for val in result["Data"]:
+            content += val["Words"] + " "
+        print("\n" * 10)
+        print(content)
+    except Exception :
+        print_exc()
+        print()
+        print(res.text)
+        input()
 
 
 def main() :
@@ -62,4 +75,5 @@ def main() :
 
 if __name__ == "__main__" :
 
-    main()
+	main()
+	
