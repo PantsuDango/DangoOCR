@@ -133,27 +133,7 @@ def getPost():
         return jsonFail(err)
 
 
-# 检测运行状态
-def detectPort(port=6666) :
-
-    while True :
-        s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        try :
-            s.connect(("127.0.0.1", int(port)))
-            s.shutdown(2)
-            s.close()
-            time.sleep(0.5)
-            print("\n\033[0;40;42m\t------------- | 团子离线OCR启动完毕 | -------------\033[0m")
-            print("\033[0;40;42m\t------| 请勿关闭此窗口, 缩小后直接使用翻译器 | ------\033[0m")
-            break
-        except Exception :
-            time.sleep(1)
-
-
 if __name__ == "__main__" :
 
     port = openConfig("../config/config.yaml")
-    thread = threading.Thread(target=detectPort, args=(port,))
-    thread.setDaemon(False)
-    thread.start()
     app.run(debug=False, host="0.0.0.0", port=port, threaded=False)
