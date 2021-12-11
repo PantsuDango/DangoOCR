@@ -97,7 +97,10 @@ def ocrProccess(imgPath, language):
 
     resMapList = []
     for line in result:
-        print(line[1][0])
+        try:
+            print(line[1][0])
+        except Exception:
+            pass
         resMap = {
             "Coordinate": {
                 "UpperLeft": line[0][0],
@@ -135,5 +138,5 @@ def getPost():
 
 if __name__ == "__main__" :
 
-    port = openConfig("../config/config.yaml")
+    port = openConfig("../../config/config.yaml")
     app.run(debug=False, host="0.0.0.0", port=port, threaded=False)
