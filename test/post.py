@@ -31,7 +31,7 @@ def processImage(filename, mwidth=400, mheight=400):
 def post(changeSize=False) :
 
     url = 'http://127.0.0.1:6666/ocr/api'
-    filename = r"image2.jpg"
+    filename = r"image.jpg"
     if changeSize == True :
         imagePath = processImage(filename, 400, 400)
     else :
