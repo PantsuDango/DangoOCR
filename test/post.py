@@ -61,7 +61,7 @@ def post(changeSize=False) :
 
 def main() :
 
-    number = 1
+    number = 100
     timeCount = 0
     for num in range(number) :
         start = time.time()

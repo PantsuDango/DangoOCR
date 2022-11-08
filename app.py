@@ -113,7 +113,7 @@ def getPost():
         post_data = request.get_data()
         post_data = json.loads(post_data.decode("utf-8"))
 
-        languageList = ["JAP", "ENG", "KOR"]
+        languageList = ["JAP", "ENG", "KOR", "RU"]
         if post_data["Language"] not in languageList:
             return jsonFail("Language {} doesn't exist".format(post_data["Language"]))
 
