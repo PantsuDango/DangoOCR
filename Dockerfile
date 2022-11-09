@@ -41,7 +41,7 @@ WORKDIR /data
 RUN curl -O http://39.108.110.77/group1/default/20210624/12/19/5/33745153e1c36c0de5743b3318f07df9.py
 RUN mv 33745153e1c36c0de5743b3318f07df9.py ocr_test.py
 RUN curl -O http://39.108.110.77/group1/default/20210624/12/21/5/bc77a06529e648b5c89620bf352c5360.jpg
-RUN mv bc77a06529e648b5c89620bf352c5360.jpg image.jpg
+RUN mv bc77a06529e648b5c89620bf352c5360.jpg JAP.jpg
 RUN curl -O http://39.108.110.77/group1/default/20210624/14/47/5/9858569826b7ac479e031c89b70fc216.24
 RUN mv 9858569826b7ac479e031c89b70fc216.24 libstdc++.so.6.0.24 && chmod +x libstdc++.so.6.0.24
 RUN mv libstdc++.so.6.0.24 /usr/lib64/

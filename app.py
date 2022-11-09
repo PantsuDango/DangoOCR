@@ -42,32 +42,32 @@ def ocrResultSort(ocr_result):
     ocr_result.sort(key=lambda x: x[0][0][1])
 
     # 二次根据纵坐标数值分组（分行）
-    allgroup = []
-    newgroup = []
+    all_group = []
+    new_group = []
     flag = ocr_result[0][0][0][1]
     pram = max([int((i[0][3][1] - i[0][0][1]) / 2) for i in ocr_result])
 
     for sn, i in enumerate(ocr_result):
         if abs(flag - i[0][0][1]) <= pram:
-            newgroup.append(i)
+            new_group.append(i)
         else:
-            allgroup.append(newgroup)
+            all_group.append(new_group)
             flag = i[0][0][1]
-            newgroup = [i]
-    allgroup.append(newgroup)
+            new_group = [i]
+    all_group.append(new_group)
 
     # 单行内部按左上点横坐标排序
-    allgroup = [sorted(i, key=lambda x: x[0][0][0]) for i in allgroup]
+    all_group = [sorted(i, key=lambda x: x[0][0][0]) for i in all_group]
     # 去除分组，归一为大列表
-    allgroup = [ii for i in allgroup for ii in i]
+    all_group = [ii for i in all_group for ii in i]
     # 列表输出为排序后txt
-    allgroup = [ii for ii in allgroup]
+    all_group = [ii for ii in all_group]
 
-    return allgroup
+    return all_group
 
 
 # ocr解析
-def ocrProccess(imgPath, language):
+def ocrProcess(imgPath, language):
     if language == "JAP":
         result = japOcr.ocr(imgPath, cls=False)
     elif language == "ENG":
@@ -117,7 +117,7 @@ def getPost():
         if post_data["Language"] not in languageList:
             return jsonFail("Language {} doesn't exist".format(post_data["Language"]))
 
-        res = ocrProccess(post_data["ImagePath"], post_data["Language"])
+        res = ocrProcess(post_data["ImagePath"], post_data["Language"])
         return jsonSuccess(res)
 
     except Exception as err:
