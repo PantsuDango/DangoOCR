@@ -6,8 +6,8 @@ import cv2
 from traceback import print_exc
 
 URL = "http://127.0.0.1:6666/ocr/api"
-IMAGE_NAME = "JAP.jpg"
-LANGUAGE = "JAP"
+IMAGE_NAME = "ZH.jpg"
+LANGUAGE = "ZH"
 
 
 def post() :

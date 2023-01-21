@@ -12,6 +12,7 @@ japOcr = PaddleOCR(use_angle_cls=False, use_gpu=False, lang="japan", enable_mkld
 engOcr = PaddleOCR(use_angle_cls=False, use_gpu=False, lang="en", enable_mkldnn=True)
 korOcr = PaddleOCR(use_angle_cls=False, use_gpu=False, lang="korean", enable_mkldnn=True)
 ruOcr = PaddleOCR(use_angle_cls=False, use_gpu=False, lang="ru", enable_mkldnn=True)
+zhOcr = PaddleOCR(use_angle_cls=False, use_gpu=False, lang="ch", enable_mkldnn=True)
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
@@ -76,6 +77,8 @@ def ocrProcess(imgPath, language):
         result = korOcr.ocr(imgPath, cls=False)
     elif language == "RU":
         result = ruOcr.ocr(imgPath, cls=False)
+    elif language == "ZH":
+        result = zhOcr.ocr(imgPath, cls=False)
     else:
         result = japOcr.ocr(imgPath, cls=False)
 
@@ -113,7 +116,7 @@ def getPost():
         post_data = request.get_data()
         post_data = json.loads(post_data.decode("utf-8"))
 
-        languageList = ["JAP", "ENG", "KOR", "RU"]
+        languageList = ["JAP", "ENG", "KOR", "RU", "ZH"]
         if post_data["Language"] not in languageList:
             return jsonFail("Language {} doesn't exist".format(post_data["Language"]))
 
