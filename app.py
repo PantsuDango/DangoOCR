@@ -1,4 +1,4 @@
-import sys
+import argparse
 
 import flask
 import paddleocr.paddleocr
@@ -113,7 +113,6 @@ def ocrProcess(imgPath, language):
 
 
 # 接收请求
-@app.route("/ocr/api", methods=["POST", "HEAD"])
 def handle_request():
 
     # 客户端检测是否运行
@@ -139,11 +138,19 @@ def handle_request():
 
 
 if __name__ == "__main__":
-
+    host = "127.0.0.1"
     port = 6666
-    try:
-        port = int(sys.argv[1])
-    except BaseException:
-        ...
+    path = "/ocr/api"
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("-h", "--host", type=str, default=host, help="监听的主机。默认：\"%s\"" % host)
+    parser.add_argument("-p", "--port", type=int, default=port, help="监听的端口。默认：%d" % port)
+    parser.add_argument("-P", "--path", type=str, default=path, help="监听的路径。默认：\"%s\"" % path)
+    parser.add_argument('--help', action='help', help='打印帮助。')
+    args = parser.parse_args()
 
-    app.run(debug=False, host="0.0.0.0", port=port, threaded=False)
+    host = args.host
+    port = args.port
+    path = args.path
+    print("监听：http://%s:%d%s" % (host, port, path))
+    app.add_url_rule(path, view_func=handle_request, methods=["POST", "HEAD"])
+    app.run(debug=False, host=host, port=port, threaded=False)
