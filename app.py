@@ -1,3 +1,6 @@
+import sys
+
+import flask
 import paddleocr.paddleocr
 from paddleocr.paddleocr import PaddleOCR
 from flask import Flask, request, jsonify
@@ -110,8 +113,15 @@ def ocrProcess(imgPath, language):
 
 
 # 接收请求
-@app.route("/ocr/api", methods=["POST"])
-def getPost():
+@app.route("/ocr/api", methods=["POST", "HEAD"])
+def handle_request():
+
+    # 客户端检测是否运行
+    if request.method == "HEAD":
+        return flask.Response(headers={
+            "Dango-OCR": "OK",
+        })
+
     try:
         post_data = request.get_data()
         post_data = json.loads(post_data.decode("utf-8"))
@@ -128,6 +138,12 @@ def getPost():
         return jsonFail(err)
 
 
-if __name__ == "__main__" :
+if __name__ == "__main__":
 
-    app.run(debug=False, host="0.0.0.0", port=6666, threaded=False)
+    port = 6666
+    try:
+        port = int(sys.argv[1])
+    except BaseException:
+        ...
+
+    app.run(debug=False, host="0.0.0.0", port=port, threaded=False)
