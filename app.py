@@ -155,7 +155,7 @@ if __name__ == "__main__":
     parser.add_argument("-h", "--host", type=str, default=host, help="监听的主机。默认：\"%s\"" % host)
     parser.add_argument("-p", "--port", type=int, default=port, help="监听的端口。默认：%d" % port)
     parser.add_argument("-P", "--path", type=str, default=path, help="监听的路径。默认：\"%s\"" % path)
-    parser.add_argument("-d", "--disable-image-path", type=bool, default=False, help="禁止图片路径。")
+    parser.add_argument("-d", "--disable-image-path", action="store_true", help="禁止图片路径。")
     parser.add_argument('--help', action='help', help='打印帮助。')
     args = parser.parse_args()
 
