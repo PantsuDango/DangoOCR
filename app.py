@@ -20,6 +20,8 @@ zhOcr = PaddleOCR(use_angle_cls=False, use_gpu=False, lang="ch", enable_mkldnn=T
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 
+enable_image_path = True
+
 
 # 失败的返回
 def jsonFail(message):
@@ -71,19 +73,19 @@ def ocrResultSort(ocr_result):
 
 
 # ocr解析
-def ocrProcess(imgPath, language):
+def ocrProcess(img, language):
     if language == "JAP":
-        result = japOcr.ocr(imgPath, cls=False)
+        result = japOcr.ocr(img, cls=False)
     elif language == "ENG":
-        result = engOcr.ocr(imgPath, cls=False)
+        result = engOcr.ocr(img, cls=False)
     elif language == "KOR":
-        result = korOcr.ocr(imgPath, cls=False)
+        result = korOcr.ocr(img, cls=False)
     elif language == "RU":
-        result = ruOcr.ocr(imgPath, cls=False)
+        result = ruOcr.ocr(img, cls=False)
     elif language == "ZH":
-        result = zhOcr.ocr(imgPath, cls=False)
+        result = zhOcr.ocr(img, cls=False)
     else:
-        result = japOcr.ocr(imgPath, cls=False)
+        result = japOcr.ocr(img, cls=False)
 
     try:
         result = ocrResultSort(result)
@@ -122,14 +124,22 @@ def handle_request():
         })
 
     try:
-        post_data = request.get_data()
-        post_data = json.loads(post_data.decode("utf-8"))
+        if request.mimetype == "multipart/form-data":
+            post_data = request.form
+            image = request.files["image"].stream.read()
+        else:
+            if not enable_image_path:
+                return jsonFail("Disable image path")
+            post_data = request.get_data()
+            post_data = json.loads(post_data.decode("utf-8"))
+            image = post_data["ImagePath"]
+        language = post_data["Language"]
 
-        languageList = ["JAP", "ENG", "KOR", "RU", "ZH"]
-        if post_data["Language"] not in languageList:
-            return jsonFail("Language {} doesn't exist".format(post_data["Language"]))
+        language_list = ["JAP", "ENG", "KOR", "RU", "ZH"]
+        if language not in language_list:
+            return jsonFail("Language {} doesn't exist".format(language))
 
-        res = ocrProcess(post_data["ImagePath"], post_data["Language"])
+        res = ocrProcess(image, language)
         return jsonSuccess(res)
 
     except Exception as err:
@@ -145,12 +155,16 @@ if __name__ == "__main__":
     parser.add_argument("-h", "--host", type=str, default=host, help="监听的主机。默认：\"%s\"" % host)
     parser.add_argument("-p", "--port", type=int, default=port, help="监听的端口。默认：%d" % port)
     parser.add_argument("-P", "--path", type=str, default=path, help="监听的路径。默认：\"%s\"" % path)
+    parser.add_argument("-d", "--disable-image-path", type=bool, default=False, help="禁止图片路径。")
     parser.add_argument('--help', action='help', help='打印帮助。')
     args = parser.parse_args()
 
     host = args.host
     port = args.port
     path = args.path
-    print("监听：http://%s:%d%s" % (host, port, path))
+    enable_image_path = not args.disable_image_path
+
+    print('是否允许图片路径：%s' % enable_image_path)
+    print("接口：http://%s:%d%s" % (host, port, path))
     app.add_url_rule(path, view_func=handle_request, methods=["POST", "HEAD"])
     app.run(debug=False, host=host, port=port, threaded=False)
