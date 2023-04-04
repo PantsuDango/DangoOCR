@@ -126,7 +126,7 @@ def handle_request():
     try:
         if request.mimetype == "multipart/form-data":
             post_data = request.form
-            image = request.files["image"].stream.read()
+            image = request.files["Image"].stream.read()
         else:
             if not enable_image_path:
                 return jsonFail("Disable image path")
